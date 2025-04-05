@@ -1,0 +1,8 @@
+name: BaseImageBuild
+run-name: Initialize or Update Base Image
+on:
+	push:
+		branches:
+			- '**'
+
+
