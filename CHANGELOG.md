@@ -1,6 +1,8 @@
 # Table of Contents
 
 * [Changelog for unreleased](#changelog-for-unreleased-unreleased)
+* [Changelog for 7.1.2](#changelog-for-712-2025-03-28)
+* [Changelog for 7.1.1](#changelog-for-711-2025-03-14)
 * [Changelog for 7.1.0](#changelog-for-710-2025-03-06)
 * [Changelog for 7.0.0](#changelog-for-700-2024-12-17)
 * [Changelog for 5.0.9](#changelog-for-509-2024-11-14)
@@ -32,8 +34,8 @@
 * [Changelog for 3.0.0](#changelog-for-300-2023-06-06)
 * [Changelog for 2.0.0](#changelog-for-200-2022-11-30)
 * [Changelog for 1.20.0](#changelog-for-1200-2022-04-13)
-* [Changelog for 1.19.1](#changelog-for-1191-2022-03-29)
 * [Changelog for 1.19.0](#changelog-for-1190-2022-03-29)
+* [Changelog for 1.19.1](#changelog-for-1191-2022-03-29)
 * [Changelog for 1.18.0](#changelog-for-1180-2022-03-03)
 * [Changelog for 1.17.0](#changelog-for-1170-2022-02-16)
 * [Changelog for 1.16.0](#changelog-for-1160-2021-12-10)
@@ -58,7 +60,7 @@
 
 The following sections list the changes for unreleased.
 
-[unreleased]: https://github.com/owncloud/ocis/compare/v7.1.0...master
+[unreleased]: https://github.com/owncloud/ocis/compare/v7.1.2...master
 
 ## Summary
 
@@ -67,8 +69,13 @@ The following sections list the changes for unreleased.
 * Bugfix - Fix the OCM role file editor: [#11093](https://github.com/owncloud/ocis/pull/11093)
 * Bugfix - Fix the parent-id for the share-jail root: [#11101](https://github.com/owncloud/ocis/pull/11101)
 * Bugfix - Adjust the capabilities according to full text search config: [#11111](https://github.com/owncloud/ocis/pull/11111)
+* Bugfix - Fix app-auth: [#11123](https://github.com/owncloud/ocis/pull/11123)
+* Bugfix - Fix the SpaceMembershipExpired duplicate event: [#11127](https://github.com/owncloud/ocis/pull/11127)
+* Bugfix - Fix migrate rebuild-jsoncs3-indexes cli: [#11145](https://github.com/owncloud/ocis/pull/11145)
+* Bugfix - OCM Share Notifications: [#11162](https://github.com/owncloud/ocis/pull/11162)
+* Bugfix - Fix pdf form creation: [#11163](https://github.com/owncloud/ocis/pull/11163)
+* Bugfix - Fix app-auth, REST status code: [#11190](https://github.com/owncloud/ocis/pull/11190)
 * Enhancement - Update Mockery to 2.52.3: [#11070](https://github.com/owncloud/ocis/pull/11070)
-* Enhancement - Bump Reva: [#11083](https://github.com/owncloud/ocis/pull/11083)
 * Enhancement - Improve postprocessing logs: [#11108](https://github.com/owncloud/ocis/pull/11108)
 * Enhancement - Improve graph space management logs: [#11115](https://github.com/owncloud/ocis/pull/11115)
 
@@ -111,18 +118,57 @@ The following sections list the changes for unreleased.
    https://github.com/owncloud/ocis/issues/11059
    https://github.com/owncloud/ocis/pull/11111
 
+* Bugfix - Fix app-auth: [#11123](https://github.com/owncloud/ocis/pull/11123)
+
+   Allow the app-auth announce `www-authenticate: basic` header.
+
+   https://github.com/owncloud/ocis/issues/11113
+   https://github.com/owncloud/ocis/pull/11123
+
+* Bugfix - Fix the SpaceMembershipExpired duplicate event: [#11127](https://github.com/owncloud/ocis/pull/11127)
+
+   We fixed the SpaceMembershipExpired event duplication issue.
+
+   https://github.com/owncloud/ocis/issues/10966
+   https://github.com/owncloud/ocis/pull/11127
+
+* Bugfix - Fix migrate rebuild-jsoncs3-indexes cli: [#11145](https://github.com/owncloud/ocis/pull/11145)
+
+   Fix migrate rebuild-jsoncs3-indexes cli
+
+   https://github.com/owncloud/ocis/issues/11145
+   https://github.com/owncloud/ocis/pull/11145
+
+* Bugfix - OCM Share Notifications: [#11162](https://github.com/owncloud/ocis/pull/11162)
+
+   Fix no OCM sharing notifications, now share and unshare notifications are
+   created
+
+   https://github.com/owncloud/ocis/issues/11042
+   https://github.com/owncloud/ocis/pull/11162
+
+* Bugfix - Fix pdf form creation: [#11163](https://github.com/owncloud/ocis/pull/11163)
+
+   Fix pdf form creation for Onlyoffice. Adjust the file extension for Form to be
+   PDF instead of DOCXF
+
+   https://github.com/owncloud/ocis/issues/11164
+   https://github.com/owncloud/ocis/pull/11163
+
+* Bugfix - Fix app-auth, REST status code: [#11190](https://github.com/owncloud/ocis/pull/11190)
+
+   Now app-auth REST returns status code 404 when creating token for non-existent
+   user (Impersonation)
+
+   https://github.com/owncloud/ocis/issues/10815
+   https://github.com/owncloud/ocis/pull/11190
+
 * Enhancement - Update Mockery to 2.52.3: [#11070](https://github.com/owncloud/ocis/pull/11070)
 
    Without updating ocis will not build on go 1.24. This requires also updating the
    go version to 1.24
 
    https://github.com/owncloud/ocis/pull/11070
-
-* Enhancement - Bump Reva: [#11083](https://github.com/owncloud/ocis/pull/11083)
-
-   Bumps reva version to 2.27.7
-
-   https://github.com/owncloud/ocis/pull/11083
 
 * Enhancement - Improve postprocessing logs: [#11108](https://github.com/owncloud/ocis/pull/11108)
 
@@ -137,6 +183,63 @@ The following sections list the changes for unreleased.
 
    https://github.com/owncloud/ocis/issues/10989
    https://github.com/owncloud/ocis/pull/11115
+
+# Changelog for [7.1.2] (2025-03-28)
+
+The following sections list the changes for 7.1.2.
+
+[7.1.2]: https://github.com/owncloud/ocis/compare/v7.1.1...v7.1.2
+
+## Summary
+
+* Bugfix - Fix pdf form creation: [#11163](https://github.com/owncloud/ocis/pull/11163)
+
+## Details
+
+* Bugfix - Fix pdf form creation: [#11163](https://github.com/owncloud/ocis/pull/11163)
+
+   Fix pdf form creation for Onlyoffice. Adjust the file extension for Form to be
+   PDF instead of DOCXF
+
+   https://github.com/owncloud/ocis/issues/11164
+   https://github.com/owncloud/ocis/pull/11163
+
+# Changelog for [7.1.1] (2025-03-14)
+
+The following sections list the changes for 7.1.1.
+
+[7.1.1]: https://github.com/owncloud/ocis/compare/v7.1.0...v7.1.1
+
+## Summary
+
+* Bugfix - Fix translations of editor roles: [#11116](https://github.com/owncloud/ocis/pull/11116)
+* Enhancement - Update Web to v11.3.1: [#11131](https://github.com/owncloud/ocis/pull/11131)
+
+## Details
+
+* Bugfix - Fix translations of editor roles: [#11116](https://github.com/owncloud/ocis/pull/11116)
+
+   Uses the correct translations strings for ocis roles
+
+   https://github.com/owncloud/ocis/pull/11116
+
+* Enhancement - Update Web to v11.3.1: [#11131](https://github.com/owncloud/ocis/pull/11131)
+
+   - Bugfix [owncloud/web#12225](https://github.com/owncloud/web/pull/12225):
+   Broken title for public files link - Bugfix
+   [owncloud/web#12226](https://github.com/owncloud/web/pull/12226): Disable
+   password protected folders creation inside public links - Bugfix
+   [owncloud/web#12240](https://github.com/owncloud/web/pull/12240): Add password
+   policies to password protected folders - Bugfix
+   [owncloud/web#12241](https://github.com/owncloud/web/pull/12241): Revert
+   password protected folder creation on error - Bugfix
+   [owncloud/web#12270](https://github.com/owncloud/web/pull/12270): Add password
+   generator into password protected folders - Bugfix
+   [owncloud/web#12297](https://github.com/owncloud/web/pull/12297): Two spaces are
+   created at the same time when user tries to create a space
+
+   https://github.com/owncloud/ocis/pull/11131
+   https://github.com/owncloud/web/releases/tag/v11.3.1
 
 # Changelog for [7.1.0] (2025-03-06)
 
@@ -11260,7 +11363,7 @@ The following sections list the changes for 2.0.0.
 
 The following sections list the changes for 1.20.0.
 
-[1.20.0]: https://github.com/owncloud/ocis/compare/v1.19.1...v1.20.0
+[1.20.0]: https://github.com/owncloud/ocis/compare/v1.19.0...v1.20.0
 
 ## Summary
 
@@ -11434,29 +11537,11 @@ The following sections list the changes for 1.20.0.
    https://github.com/owncloud/ocis/pull/3509
    https://github.com/owncloud/web/releases/tag/v5.4.0
 
-# Changelog for [1.19.1] (2022-03-29)
-
-The following sections list the changes for 1.19.1.
-
-[1.19.1]: https://github.com/owncloud/ocis/compare/v1.19.0...v1.19.1
-
-## Summary
-
-* Bugfix - Return correct special item urls: [#3419](https://github.com/owncloud/ocis/pull/3419)
-
-## Details
-
-* Bugfix - Return correct special item urls: [#3419](https://github.com/owncloud/ocis/pull/3419)
-
-   URLs for Special items (space image, readme) were broken.
-
-   https://github.com/owncloud/ocis/pull/3419
-
 # Changelog for [1.19.0] (2022-03-29)
 
 The following sections list the changes for 1.19.0.
 
-[1.19.0]: https://github.com/owncloud/ocis/compare/v1.18.0...v1.19.0
+[1.19.0]: https://github.com/owncloud/ocis/compare/v1.19.1...v1.19.0
 
 ## Summary
 
@@ -11629,6 +11714,24 @@ The following sections list the changes for 1.19.0.
    https://github.com/owncloud/ocis/pull/3291
    https://github.com/owncloud/ocis/pull/3375
    https://github.com/owncloud/web/releases/tag/v5.3.0
+
+# Changelog for [1.19.1] (2022-03-29)
+
+The following sections list the changes for 1.19.1.
+
+[1.19.1]: https://github.com/owncloud/ocis/compare/v1.18.0...v1.19.1
+
+## Summary
+
+* Bugfix - Return correct special item urls: [#3419](https://github.com/owncloud/ocis/pull/3419)
+
+## Details
+
+* Bugfix - Return correct special item urls: [#3419](https://github.com/owncloud/ocis/pull/3419)
+
+   URLs for Special items (space image, readme) were broken.
+
+   https://github.com/owncloud/ocis/pull/3419
 
 # Changelog for [1.18.0] (2022-03-03)
 

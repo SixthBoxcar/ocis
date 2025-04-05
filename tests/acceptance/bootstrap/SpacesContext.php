@@ -2104,6 +2104,11 @@ class SpacesContext implements Context {
 		string $spaceName
 	): void {
 		$spaceId = $this->getSpaceIdByName($user, $spaceName);
+		if ($spaceName === "Shares"
+			&& $this->featureContext->getDavPathVersion() !== WebDavHelper::DAV_VERSION_SPACES
+		) {
+			$fileName = "Shares/$fileName";
+		}
 		$response = $this->featureContext->downloadFileAsUserUsingPassword(
 			$user,
 			$fileName,
@@ -2695,8 +2700,7 @@ class SpacesContext implements Context {
 		string $resource,
 		string $spaceName
 	): void {
-		$dateTime = new DateTime('yesterday');
-		$rows['expireDate'] = $dateTime->format('Y-m-d\\TH:i:sP');
+		$rows['expireDate'] = $this->featureContext->formatExpiryDateTime('Y-m-d\\TH:i:sP');
 		if ($this->featureContext->isUsingSharingNG()) {
 			$space = $this->getSpaceByName($user, $spaceName);
 			$itemId = $this->getResourceId($user, $spaceName, $resource);

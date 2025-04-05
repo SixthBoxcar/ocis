@@ -97,9 +97,10 @@ config = {
             ],
             "skip": False,
         },
-        "settings": {
+        "settingsAndNotification": {
             "suites": [
                 "apiSettings",
+                "apiNotification",
             ],
             "skip": False,
             "withRemotePhp": [True],
@@ -117,17 +118,18 @@ config = {
                 "NOTIFICATIONS_DEBUG_ADDR": "0.0.0.0:9174",
             },
         },
-        "graph": {
+        "graphBasicAndGroup": {
             "suites": [
-                "apiGraph",
                 "apiServiceAvailability",
+                "apiGraph",
+                "apiGraphGroup",
             ],
             "skip": False,
             "withRemotePhp": [True],
         },
-        "graphUserGroup": {
+        "graphUser": {
             "suites": [
-                "apiGraphUserGroup",
+                "apiGraphUser",
             ],
             "skip": False,
             "withRemotePhp": [True],
@@ -162,27 +164,37 @@ config = {
             ],
             "skip": False,
         },
-        "sharingNg": {
+        "sharingNg1": {
             "suites": [
-                "apiReshare",
-                "apiSharingNg1",
-                "apiSharingNg2",
-                "apiOptionalShareRole",
+                "apiSharingNgShares",
             ],
             "skip": False,
+            "withRemotePhp": [True],
+        },
+        "sharingNg2": {
+            "suites": [
+                "apiSharingNgPermissions",
+                "apiReshare",
+                "apiSharingNgAdditionalShareRole",
+            ],
+            "skip": False,
+            "withRemotePhp": [True],
         },
         "sharingNgShareInvitation": {
             "suites": [
-                "apiSharingNgShareInvitation",
+                "apiSharingNgDriveInvitation",
+                "apiSharingNgItemInvitation",
             ],
             "skip": False,
+            "withRemotePhp": [True],
         },
         "sharingNgLinkShare": {
             "suites": [
-                "apiSharingNgLinkSharePermission",
-                "apiSharingNgLinkShareRoot",
+                "apiSharingNgDriveLinkShare",
+                "apiSharingNgItemLinkShare",
             ],
             "skip": False,
+            "withRemotePhp": [True],
         },
         "accountsHashDifficulty": {
             "skip": False,
@@ -190,26 +202,6 @@ config = {
                 "apiAccountsHashDifficulty",
             ],
             "accounts_hash_difficulty": "default",
-        },
-        "notification": {
-            "suites": [
-                "apiNotification",
-            ],
-            "skip": False,
-            "withRemotePhp": [True],
-            "emailNeeded": True,
-            "extraEnvironment": {
-                "EMAIL_HOST": EMAIL_SMTP_HOST,
-                "EMAIL_PORT": EMAIL_PORT,
-            },
-            "extraServerEnvironment": {
-                "OCIS_ADD_RUN_SERVICES": "notifications",
-                "NOTIFICATIONS_SMTP_HOST": EMAIL_SMTP_HOST,
-                "NOTIFICATIONS_SMTP_PORT": EMAIL_SMTP_PORT,
-                "NOTIFICATIONS_SMTP_INSECURE": "true",
-                "NOTIFICATIONS_SMTP_SENDER": EMAIL_SMTP_SENDER,
-                "NOTIFICATIONS_DEBUG_ADDR": "0.0.0.0:9174",
-            },
         },
         "antivirus": {
             "suites": [
@@ -3292,9 +3284,11 @@ def k6LoadTests(ctx):
     script_link = "%s/%s/tests/config/drone/run_k6_tests.sh" % (ocis_git_base_url, ctx.build.commit)
 
     event_array = ["cron"]
+    trigger_ref = ["refs/heads/master"]
 
     if "k6-test" in ctx.build.title.lower():
         event_array.append("pull_request")
+        trigger_ref.append("refs/pull/**")
 
     return [{
         "kind": "pipeline",
@@ -3347,6 +3341,7 @@ def k6LoadTests(ctx):
         "depends_on": [],
         "trigger": {
             "event": event_array,
+            "ref": trigger_ref,
         },
     }]
 

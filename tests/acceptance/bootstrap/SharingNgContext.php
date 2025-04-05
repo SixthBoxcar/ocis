@@ -525,6 +525,82 @@ class SharingNgContext implements Context {
 	}
 
 	/**
+	 * @When user :user sends the following concurrent resource share invitations to federated user using the Graph API:
+	 *
+	 * @param string $user
+	 * @param TableNode $table
+	 *
+	 * @return void
+	 */
+	public function userSendsTheFollowingResourcesShareInvitationConcurrentlyToFederatedUserUsingTheGraphApi(
+		string $user,
+		TableNode $table
+	): void {
+		$results = $this->sendConcurrentShareInvitation($user, $table);
+		foreach ($results as $result) {
+			$this->featureContext->pushToLastHttpStatusCodesArray((string)$result->getStatusCode());
+		}
+	}
+
+	/**
+	 * @param string $user
+	 * @param TableNode $table
+	 *
+	 * @return array
+	 * @throws GuzzleException
+	 * @throws JsonException
+	 */
+	public function sendConcurrentShareInvitation(string $user, TableNode $table): array {
+		$table = $table->getColumnsHash();
+		foreach ($table as $shareInfo) {
+			$space = $this->spacesContext->getSpaceByName($user, $shareInfo['space']);
+			$spaceId = $space['id'];
+
+			$resource = $shareInfo['resource'] ?? '';
+			$itemId = $this->spacesContext->getResourceId($user, $shareInfo['space'], $resource);
+
+			$shareeId = (
+				$this->featureContext->ocmContext->getAcceptedUserByName(
+					$user,
+					$shareInfo["sharee"]
+				)
+			)['user_id'];
+
+			$shareType = $shareInfo['shareType'];
+			$permissionsRole = $shareInfo['permissionsRole'] ?? null;
+			$roleId = GraphHelper::getPermissionsRoleIdByName($permissionsRole);
+
+			$body = [];
+			$body['recipients'][] = [
+				"@libre.graph.recipient.type" => $shareType,
+				"objectId" => $shareeId
+			];
+			$body['roles'] = [$roleId];
+
+			$fullUrl = GraphHelper::getBetaFullUrl(
+				$this->featureContext->getBaseUrl(),
+				"drives/$spaceId/items/$itemId/invite"
+			);
+
+			$request = HttpRequestHelper::createRequest(
+				$fullUrl,
+				$this->featureContext->getStepLineRef(),
+				"POST",
+				['Content-Type' => 'application/json'],
+				\json_encode($body)
+			);
+			$requests[] = $request;
+		}
+
+		$client = HttpRequestHelper::createClient(
+			$this->featureContext->getActualUsername($user),
+			$this->featureContext->getPasswordForUser($user)
+		);
+
+		return HttpRequestHelper::sendBatchRequest($requests, $client);
+	}
+
+	/**
 	 * @When /^user "([^"]*)" sends the following space share invitation using permissions endpoint of the Graph API:$/
 	 *
 	 * @param string $user
@@ -739,6 +815,23 @@ class SharingNgContext implements Context {
 		TableNode $body
 	): void {
 		$this->featureContext->setResponse($this->createLinkShare($user, $body));
+	}
+
+	/**
+	 * @Given user :user has created the following space link share using permissions endpoint of the Graph API:
+	 *
+	 * @param string $user
+	 * @param TableNode $body
+	 *
+	 * @return void
+	 * @throws GuzzleException
+	 */
+	public function userHasCreatedTheFollowingSpaceLinkShareUsingPermissionsEndpointOfTheGraphApi(
+		string $user,
+		TableNode $body
+	): void {
+		$response = $this->createLinkShare($user, $body);
+		$this->featureContext->theHTTPStatusCodeShouldBe(200, "Failed while creating public share link!", $response);
 	}
 
 	/**
@@ -1541,7 +1634,8 @@ class SharingNgContext implements Context {
 	}
 
 	/**
-	 * @Then /^user "([^"]*)" has a share "([^"]*)" synced$/
+	 * @Given /^user "([^"]*)" has a share "([^"]*)" synced$/
+	 * @Then user :user should have a share :resource synced
 	 *
 	 * @param string $user
 	 * @param string $resource
@@ -1977,6 +2071,7 @@ class SharingNgContext implements Context {
 	 * @param string $space
 	 * @param bool $shouldExist
 	 * @param bool $federatedShare
+	 * @param string $role	compares share role if provided
 	 *
 	 * @return void
 	 * @throws GuzzleException
@@ -1987,18 +2082,20 @@ class SharingNgContext implements Context {
 		string $share,
 		string $sharee,
 		string $sharer,
-		string $space,
+		string $space = '',
 		bool $shouldExist = true,
-		bool $federatedShare = false
+		bool $federatedShare = false,
+		string $role = ''
 	): void {
 		$share = \ltrim($share, "/");
-		if (\strtolower($space) === "personal") {
-			$remoteDriveAlias = "personal/" . \strtolower($sharer);
-		} else {
-			$remoteDriveAlias = "project/" . \strtolower($space);
-		}
-
+		$wasOrNot = $shouldExist ? "was not" : "was";
 		if (!$federatedShare) {
+			if (\strtolower($space) === "personal") {
+				$remoteDriveAlias = "personal/" . \strtolower($sharer);
+			} else {
+				$remoteDriveAlias = "project/" . \strtolower($space);
+			}
+
 			// check share mountpoint
 			$response = GraphHelper::getMySpaces(
 				$this->featureContext->getBaseUrl(),
@@ -2020,7 +2117,7 @@ class SharingNgContext implements Context {
 			Assert::assertSame(
 				$shouldExist,
 				$foundShareMountpoint,
-				"Share mountpoint '$share' was not found in the drives list."
+				"Share mountpoint '$share' $wasOrNot found in the following drives list.\n" . json_encode($driveList)
 			);
 		}
 
@@ -2039,6 +2136,15 @@ class SharingNgContext implements Context {
 					$shareCreator = $permission->invitation->invitedBy->user->displayName;
 					if ($shareCreator === $this->featureContext->getDisplayNameForUser($sharer)) {
 						$foundShareInSharedWithMe = true;
+						if ($shouldExist && $role) {
+							$actualRoleId = $permission->roles[0];
+							$actualRole = GraphHelper::getPermissionNameByPermissionRoleId($actualRoleId);
+							Assert::assertSame(
+								$role,
+								$actualRole,
+								"Expected role '$role' for share '$share' but found '$actualRole'."
+							);
+						}
 						break;
 					}
 				}
@@ -2048,7 +2154,7 @@ class SharingNgContext implements Context {
 		Assert::assertSame(
 			$shouldExist,
 			$foundShareInSharedWithMe,
-			"Share '$share' was not found in the shared-with-me list"
+			"Share '$share' $wasOrNot found in the shared-with-me list.\n" . json_encode($sharedWithMeList)
 		);
 	}
 
@@ -2071,6 +2177,33 @@ class SharingNgContext implements Context {
 		string $space
 	): void {
 		$this->checkIfShareExists($share, $sharee, $sharer, $space, $shouldOrNot === "should");
+	}
+
+	/**
+	 * @Then user :sharee should have the following resource shares:
+	 *
+	 * @param string $sharee
+	 * @param TableNode $table
+	 *
+	 * @return void
+	 * @throws GuzzleException
+	 * @throws Exception
+	 */
+	public function userShouldHaveTheFollowingResourceShares(string $sharee, TableNode $table): void {
+		$shares = $table->getColumnsHash();
+		// set default space to personal if not provided
+		$space = $shares[0]['space'] ?? 'personal';
+		foreach ($shares as $share) {
+			$this->checkIfShareExists(
+				$share["resource"],
+				$sharee,
+				$share["sharer"],
+				$space,
+				true,
+				false,
+				$share["permissionsRole"],
+			);
+		}
 	}
 
 	/**
