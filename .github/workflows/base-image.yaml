@@ -1,8 +1,20 @@
-name: BaseImageBuild
+name: Build OCIS Core Image
 run-name: Initialize or Update Base Image
 on:
-	push:
-		branches:
-			- '**'
+  push:
+    branches: 
+			- $default-branch
+			- dev
+  pull_request:
+    branches: [ $default-branch ]
 
+jobs:
 
+  build:
+
+    runs-on: golang-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile.builder --tag scenelocker-ocis-core:$(date +%s)
